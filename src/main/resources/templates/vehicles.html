@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Available Vehicles - Car Rental System</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="brand-badge">CRS</span>
+            <span>Car Rental System</span>
+        </div>
+        <ul class="nav-links">
+            <li><a th:href="@{/dashboard}" class="nav-link">Dashboard</a></li>
+            <li><a th:href="@{/vehicles}" class="nav-link active">Vehicles</a></li>
+            <li><a th:href="@{/bookings}" class="nav-link">My Bookings</a></li>
+        </ul>
+        <div class="nav-user">
+            <span class="user-badge" th:text="${user.role}">USER</span>
+            <span style="font-weight: 600;" th:text="${user.username}">user1</span>
+            <a th:href="@{/logout}" class="btn btn-secondary btn-sm">Logout</a>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="container">
+        <!-- Page Header -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+            <div>
+                <h1 style="font-size: 1.8rem; font-weight: 800; color: var(--text-main);">Vehicle Fleet</h1>
+                <p style="color: var(--text-muted); font-size: 0.95rem;">Select your preferred vehicle and check real-time availability.</p>
+            </div>
+
+            <!-- Search and Filter Form -->
+            <form th:action="@{/vehicles}" method="get" style="display: flex; gap: 0.5rem; align-items: center;">
+                <select name="category" class="form-control" style="width: auto;" onchange="this.form.submit()">
+                    <option value="ALL" th:selected="${selectedCategory == 'ALL'}">All Categories</option>
+                    <option value="Sedan" th:selected="${selectedCategory == 'Sedan'}">Sedan</option>
+                    <option value="SUV" th:selected="${selectedCategory == 'SUV'}">SUV</option>
+                    <option value="Hatchback" th:selected="${selectedCategory == 'Hatchback'}">Hatchback</option>
+                </select>
+
+                <input type="text" name="search" class="form-control" placeholder="Search vehicle name..." 
+                       th:value="${searchTerm}" style="width: 200px;">
+                <button type="submit" class="btn btn-primary btn-sm">Search</button>
+                <a th:if="${searchTerm != '' or selectedCategory != 'ALL'}" th:href="@{/vehicles}" class="btn btn-secondary btn-sm">Reset</a>
+            </form>
+        </div>
+
+        <!-- Alert messages -->
+        <div th:if="${errorMessage}" class="alert alert-error">
+            <span th:text="${errorMessage}">Error</span>
+        </div>
+        <div th:if="${successMessage}" class="alert alert-success">
+            <span th:text="${successMessage}">Success</span>
+        </div>
+
+        <!-- Vehicle Cards Grid -->
+        <div class="vehicle-grid">
+            <div th:each="v : ${vehicles}" class="vehicle-card">
+                <div>
+                    <div class="vehicle-header">
+                        <div>
+                            <span class="form-help" th:text="${v.id}">R101</span>
+                            <div class="vehicle-name" th:text="${v.name}">Vehicle A</div>
+                        </div>
+                        <span class="badge" 
+                              th:classappend="${v.availability > 0 and v.status == 'ACTIVE' ? 'badge-active' : 'badge-unavailable'}"
+                              th:text="${v.availability > 0 and v.status == 'ACTIVE' ? 'ACTIVE' : 'UNAVAILABLE'}">
+                            ACTIVE
+                        </span>
+                    </div>
+
+                    <span class="badge badge-info" th:text="${v.category}">Sedan</span>
+
+                    <div class="vehicle-rate">
+                        <span style="font-size: 1.1rem; color: var(--text-main); font-weight: 500;">₹</span>
+                        <span th:text="${#numbers.formatDecimal(v.rate, 1, 0)}">499</span>
+                        <span>/ day</span>
+                    </div>
+
+                    <div class="vehicle-meta">
+                        <span style="color: var(--text-muted);">Available Units:</span>
+                        <strong th:text="${v.availability}" 
+                                th:style="${v.availability > 0 ? 'color: var(--success);' : 'color: var(--danger);'}">10</strong>
+                    </div>
+                </div>
+
+                <div>
+                    <!-- Active and available: show Book Now button -->
+                    <a th:if="${v.status == 'ACTIVE' and v.availability > 0}" 
+                       th:href="@{/booking(resourceId=${v.id})}" 
+                       class="btn btn-primary" style="width: 100%;">
+                        Book Now
+                    </a>
+
+                    <!-- Unavailable or out of stock: disabled state -->
+                    <button th:if="${v.status != 'ACTIVE' or v.availability <= 0}" 
+                            class="btn btn-disabled" style="width: 100%;" disabled>
+                        UNAVAILABLE
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty state -->
+        <div th:if="${#lists.isEmpty(vehicles)}" class="card" style="text-align: center; padding: 3rem 1rem;">
+            <p style="font-size: 1.1rem; color: var(--text-muted);">No vehicles match your search criteria.</p>
+            <a th:href="@{/vehicles}" class="btn btn-secondary btn-sm" style="margin-top: 1rem;">View All Vehicles</a>
+        </div>
+    </main>
+
+    <footer class="footer">
+        &copy; Car Rental System &mdash; Software Engineering Student Project
+    </footer>
+
+    <script th:src="@{/js/script.js}"></script>
+</body>
+</html>

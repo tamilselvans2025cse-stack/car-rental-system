@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Bookings - Car Rental System</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="brand-badge">CRS</span>
+            <span>Car Rental System</span>
+        </div>
+        <ul class="nav-links">
+            <li><a th:href="@{/dashboard}" class="nav-link">Dashboard</a></li>
+            <li><a th:href="@{/vehicles}" class="nav-link">Vehicles</a></li>
+            <li><a th:href="@{/bookings}" class="nav-link active">My Bookings</a></li>
+        </ul>
+        <div class="nav-user">
+            <span class="user-badge" th:text="${user.role}">USER</span>
+            <span style="font-weight: 600;" th:text="${user.username}">user1</span>
+            <a th:href="@{/logout}" class="btn btn-secondary btn-sm">Logout</a>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="container">
+        <!-- Page Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <div>
+                <h1 style="font-size: 1.8rem; font-weight: 800; color: var(--text-main);">My Bookings</h1>
+                <p style="color: var(--text-muted); font-size: 0.95rem;">Track your car reservations and manage cancellations.</p>
+            </div>
+            <a th:href="@{/vehicles}" class="btn btn-primary btn-sm">+ Book New Vehicle</a>
+        </div>
+
+        <!-- Alert Messages -->
+        <div th:if="${errorMessage}" class="alert alert-error">
+            <span th:text="${errorMessage}">Error</span>
+        </div>
+        <div th:if="${successMessage}" class="alert alert-success">
+            <span th:text="${successMessage}">Success</span>
+        </div>
+
+        <!-- Bookings Table -->
+        <div class="table-responsive" th:if="${not #lists.isEmpty(bookings)}">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>Booking ID</th>
+                        <th>Vehicle</th>
+                        <th>Date</th>
+                        <th>Quantity</th>
+                        <th>Rate Snapshot</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="b : ${bookings}">
+                        <td>
+                            <strong th:text="${b.reference}">BK-1001</strong>
+                        </td>
+                        <td>
+                            <span th:if="${not #lists.isEmpty(b.items)}" 
+                                  th:text="${b.items[0].resource.name + ' (' + b.items[0].resource.category + ')'}">
+                                Vehicle A
+                            </span>
+                        </td>
+                        <td th:text="${b.date}">2026-10-10</td>
+                        <td>
+                            <span th:if="${not #lists.isEmpty(b.items)}" th:text="${b.items[0].quantity}">1</span>
+                        </td>
+                        <td>
+                            <span th:if="${not #lists.isEmpty(b.items)}" 
+                                  th:text="'₹' + ${#numbers.formatDecimal(b.items[0].rate, 1, 2)}">₹499.00</span>
+                        </td>
+                        <td>
+                            <strong style="color: var(--primary);" 
+                                    th:text="'₹' + ${#numbers.formatDecimal(b.totalAmount, 1, 2)}">₹549.00</strong>
+                        </td>
+                        <td>
+                            <span th:class="'badge badge-' + ${#strings.toLowerCase(b.status)}"
+                                  th:text="${b.status}">CONFIRMED</span>
+                        </td>
+                        <td>
+                            <!-- If CONFIRMED: Allow cancel -->
+                            <form th:if="${b.status == 'CONFIRMED'}" th:action="@{/booking/cancel}" method="post" 
+                                  onsubmit="return confirm('Are you sure you want to cancel this booking? This will restore vehicle availability.');">
+                                <input type="hidden" name="bookingId" th:value="${b.id}">
+                                <button type="submit" class="btn btn-danger btn-sm">Cancel</button>
+                            </form>
+
+                            <!-- If already CANCELLED or CHECKED_IN or COMPLETED: Disable cancellation -->
+                            <span th:if="${b.status != 'CONFIRMED'}" class="form-help" style="color: var(--text-muted);">
+                                <span th:if="${b.status == 'CANCELLED'}">Cancelled</span>
+                                <span th:if="${b.status == 'CHECKED_IN'}">Trip in progress</span>
+                                <span th:if="${b.status == 'COMPLETED'}">Completed</span>
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Empty State -->
+        <div th:if="${#lists.isEmpty(bookings)}" class="card" style="text-align: center; padding: 3rem 1.5rem;">
+            <p style="font-size: 1.1rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+                You haven't made any bookings yet.
+            </p>
+            <a th:href="@{/vehicles}" class="btn btn-primary">Browse Available Vehicles</a>
+        </div>
+    </main>
+
+    <footer class="footer">
+        &copy; Car Rental System &mdash; Software Engineering Student Project
+    </footer>
+
+    <script th:src="@{/js/script.js}"></script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error - Car Rental System</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+    <div class="login-container" style="max-width: 520px;">
+        <div class="login-card" style="text-align: center;">
+            <div style="width: 60px; height: 60px; background: var(--danger-bg); color: var(--danger); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin: 0 auto 1.25rem;">
+                &#9888;
+            </div>
+
+            <h1 style="font-size: 1.6rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem;">
+                Request Could Not Be Processed
+            </h1>
+
+            <div class="alert alert-error" style="text-align: left; margin: 1.5rem 0;">
+                <span th:text="${errorMessage != null ? errorMessage : 'An unexpected error occurred.'}">
+                    An error occurred.
+                </span>
+            </div>
+
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.75rem;">
+                Please verify your input or return to the application dashboard.
+            </p>
+
+            <div style="display: flex; justify-content: center; gap: 1rem;">
+                <a th:href="@{/dashboard}" class="btn btn-primary">Return to Dashboard</a>
+                <a th:href="@{/vehicles}" class="btn btn-secondary">Browse Vehicles</a>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        &copy; Car Rental System &mdash; Software Engineering Student Project
+    </footer>
+
+</body>
+</html>

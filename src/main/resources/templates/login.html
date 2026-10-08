@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Car Rental System</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <span class="badge badge-active" style="margin-bottom: 0.75rem;">Student Assessment Prototype</span>
+                <h1>Car Rental System</h1>
+                <p>Sign in to your account</p>
+            </div>
+
+            <!-- Error and Success Alerts -->
+            <div th:if="${errorMessage}" class="alert alert-error">
+                <span th:text="${errorMessage}">Invalid credentials.</span>
+            </div>
+            <div th:if="${successMessage}" class="alert alert-success">
+                <span th:text="${successMessage}">Logged out successfully.</span>
+            </div>
+
+            <form th:action="@{/login}" method="post">
+                <div class="form-group">
+                    <label class="form-label" for="username">Username</label>
+                    <input type="text" id="username" name="username" class="form-control" placeholder="Enter username" required autofocus>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="Enter password" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
+                    Sign In
+                </button>
+            </form>
+
+            <!-- Demo Credentials -->
+            <div class="demo-credentials-box">
+                <h4>Demo Accounts (Click to Fill)</h4>
+                <div class="demo-account-item">
+                    <span>User 1:</span>
+                    <a href="javascript:void(0)" onclick="fillCredentials('user1', 'user123')">
+                        <code>user1 / user123</code>
+                    </a>
+                </div>
+                <div class="demo-account-item">
+                    <span>User 2:</span>
+                    <a href="javascript:void(0)" onclick="fillCredentials('user2', 'user123')">
+                        <code>user2 / user123</code>
+                    </a>
+                </div>
+                <div class="demo-account-item">
+                    <span>Admin:</span>
+                    <a href="javascript:void(0)" onclick="fillCredentials('admin', 'admin123')">
+                        <code>admin / admin123</code>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        &copy; Car Rental System &mdash; Software Engineering Student Project
+    </footer>
+
+    <script th:src="@{/js/script.js}"></script>
+</body>
+</html>

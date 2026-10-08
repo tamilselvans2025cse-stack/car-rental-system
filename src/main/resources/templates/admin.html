@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Car Rental System</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="brand-badge">ADMIN</span>
+            <span>Car Rental System &mdash; Operations</span>
+        </div>
+        <div class="nav-user">
+            <span class="user-badge admin">ADMINISTRATOR</span>
+            <span style="font-weight: 600;" th:text="${user.username}">admin</span>
+            <a th:href="@{/logout}" class="btn btn-secondary btn-sm">Logout</a>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="container">
+        <!-- Dashboard Header -->
+        <div style="margin-bottom: 2rem;">
+            <h1 style="font-size: 1.8rem; font-weight: 800; color: var(--text-main);">Operations Console</h1>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">
+                Oversee fleet reservations and update trip lifecycles (CONFIRMED &rarr; CHECKED_IN &rarr; COMPLETED).
+            </p>
+        </div>
+
+        <!-- Alert Messages -->
+        <div th:if="${errorMessage}" class="alert alert-error">
+            <span th:text="${errorMessage}">Error</span>
+        </div>
+        <div th:if="${successMessage}" class="alert alert-success">
+            <span th:text="${successMessage}">Success</span>
+        </div>
+
+        <!-- Summary Statistics Grid -->
+        <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+            <div class="stat-card">
+                <span class="stat-label">Total Bookings</span>
+                <span class="stat-value" th:text="${totalCount}">0</span>
+            </div>
+
+            <div class="stat-card" style="border-top: 3px solid var(--success);">
+                <span class="stat-label">Confirmed</span>
+                <span class="stat-value" style="color: var(--success);" th:text="${confirmedCount}">0</span>
+            </div>
+
+            <div class="stat-card" style="border-top: 3px solid var(--info);">
+                <span class="stat-label">Checked In</span>
+                <span class="stat-value" style="color: var(--info);" th:text="${checkedInCount}">0</span>
+            </div>
+
+            <div class="stat-card" style="border-top: 3px solid var(--purple);">
+                <span class="stat-label">Completed</span>
+                <span class="stat-value" style="color: var(--purple);" th:text="${completedCount}">0</span>
+            </div>
+
+            <div class="stat-card" style="border-top: 3px solid var(--danger);">
+                <span class="stat-label">Cancelled</span>
+                <span class="stat-value" style="color: var(--danger);" th:text="${cancelledCount}">0</span>
+            </div>
+        </div>
+
+        <!-- All Transactions Table -->
+        <div class="card">
+            <div class="card-title">All Customer Reservations</div>
+            <p class="card-subtitle">Real-time status transitions adhere strictly to Business Rule BR8.</p>
+
+            <div class="table-responsive" th:if="${not #lists.isEmpty(bookings)}">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>Ref #</th>
+                            <th>User</th>
+                            <th>Customer</th>
+                            <th>Vehicle</th>
+                            <th>Date</th>
+                            <th>Qty</th>
+                            <th>Total Amount</th>
+                            <th>Current Status</th>
+                            <th>Allowed Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="b : ${bookings}">
+                            <td>
+                                <strong th:text="${b.reference}">BK-1001</strong>
+                            </td>
+                            <td>
+                                <code th:text="${b.user.username}">user1</code>
+                            </td>
+                            <td>
+                                <div style="font-weight: 600;" th:text="${b.customerName}">John</div>
+                                <div class="form-help" th:text="${b.customerPhone}">9876543210</div>
+                            </td>
+                            <td>
+                                <span th:if="${not #lists.isEmpty(b.items)}" 
+                                      th:text="${b.items[0].resource.name}">Vehicle A</span>
+                            </td>
+                            <td th:text="${b.date}">2026-10-10</td>
+                            <td>
+                                <span th:if="${not #lists.isEmpty(b.items)}" th:text="${b.items[0].quantity}">1</span>
+                            </td>
+                            <td>
+                                <strong th:text="'₹' + ${#numbers.formatDecimal(b.totalAmount, 1, 2)}">₹549.00</strong>
+                            </td>
+                            <td>
+                                <span th:class="'badge badge-' + ${#strings.toLowerCase(b.status)}"
+                                      th:text="${b.status}">CONFIRMED</span>
+                            </td>
+                            <td>
+                                <!-- BR8 Allowed Transition 1: CONFIRMED -> CHECKED_IN -->
+                                <form th:if="${b.status == 'CONFIRMED'}" th:action="@{/admin/update-status}" method="post">
+                                    <input type="hidden" name="bookingId" th:value="${b.id}">
+                                    <input type="hidden" name="targetStatus" value="CHECKED_IN">
+                                    <button type="submit" class="btn btn-primary btn-sm">
+                                        Mark Checked In &rarr;
+                                    </button>
+                                </form>
+
+                                <!-- BR8 Allowed Transition 2: CHECKED_IN -> COMPLETED -->
+                                <form th:if="${b.status == 'CHECKED_IN'}" th:action="@{/admin/update-status}" method="post">
+                                    <input type="hidden" name="bookingId" th:value="${b.id}">
+                                    <input type="hidden" name="targetStatus" value="COMPLETED">
+                                    <button type="submit" class="btn btn-sm" style="background: var(--purple); color: white;">
+                                        Mark Completed &rarr;
+                                    </button>
+                                </form>
+
+                                <!-- Terminal statuses: COMPLETED or CANCELLED -->
+                                <span th:if="${b.status == 'COMPLETED' or b.status == 'CANCELLED'}" class="form-help" style="color: var(--text-muted);">
+                                    No further actions
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Empty State -->
+            <div th:if="${#lists.isEmpty(bookings)}" style="text-align: center; padding: 2.5rem 1rem;">
+                <p style="color: var(--text-muted);">No bookings recorded in the system yet.</p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        &copy; Car Rental System &mdash; Software Engineering Student Project
+    </footer>
+
+    <script th:src="@{/js/script.js}"></script>
+</body>
+</html>

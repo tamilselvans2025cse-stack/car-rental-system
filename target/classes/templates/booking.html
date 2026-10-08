@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservation - Car Rental System</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="brand-badge">CRS</span>
+            <span>Car Rental System</span>
+        </div>
+        <ul class="nav-links">
+            <li><a th:href="@{/dashboard}" class="nav-link">Dashboard</a></li>
+            <li><a th:href="@{/vehicles}" class="nav-link">Vehicles</a></li>
+            <li><a th:href="@{/bookings}" class="nav-link">My Bookings</a></li>
+        </ul>
+        <div class="nav-user">
+            <span class="user-badge" th:text="${user.role}">USER</span>
+            <span style="font-weight: 600;" th:text="${user.username}">user1</span>
+            <a th:href="@{/logout}" class="btn btn-secondary btn-sm">Logout</a>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="container" style="max-width: 760px;">
+
+        <!-- ========================================== -->
+        <!-- SUCCESS VIEW (After Reservation Confirmed) -->
+        <!-- ========================================== -->
+        <div th:if="${reservation != null}" class="card" style="text-align: center; padding: 2.5rem 2rem;">
+            <div style="width: 60px; height: 60px; background: var(--success-bg); color: var(--success); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin: 0 auto 1.25rem;">
+                &#10003;
+            </div>
+
+            <h2 style="font-size: 1.8rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.35rem;">
+                Booking Confirmed!
+            </h2>
+            <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.75rem;">
+                Your reservation has been created and vehicle availability has been updated.
+            </p>
+
+            <div class="bill-box" style="text-align: left; max-width: 480px; margin: 0 auto 2rem;">
+                <div class="bill-row">
+                    <span style="color: var(--text-muted);">Booking Reference</span>
+                    <strong th:text="${reservation.reference}">BK-10023</strong>
+                </div>
+                <div class="bill-row" th:if="${not #lists.isEmpty(reservation.items)}">
+                    <span style="color: var(--text-muted);">Vehicle</span>
+                    <strong th:text="${reservation.items[0].resource.name + ' (' + reservation.items[0].resource.category + ')'}">Vehicle A</strong>
+                </div>
+                <div class="bill-row" th:if="${not #lists.isEmpty(reservation.items)}">
+                    <span style="color: var(--text-muted);">Quantity</span>
+                    <strong th:text="${reservation.items[0].quantity + ' unit(s)'}">1 unit(s)</strong>
+                </div>
+                <div class="bill-row">
+                    <span style="color: var(--text-muted);">Booking / Journey Date</span>
+                    <strong th:text="${reservation.date}">2026-10-10</strong>
+                </div>
+                <div class="bill-row">
+                    <span style="color: var(--text-muted);">Customer Name</span>
+                    <strong th:text="${reservation.customerName}">User Name</strong>
+                </div>
+                <div class="bill-row">
+                    <span style="color: var(--text-muted);">Base Amount</span>
+                    <span th:text="'₹' + ${#numbers.formatDecimal(reservation.baseAmount, 1, 2)}">₹499.00</span>
+                </div>
+                <div class="bill-row">
+                    <span style="color: var(--text-muted);">Booking Charge</span>
+                    <span th:text="'₹' + ${#numbers.formatDecimal(reservation.bookingCharge, 1, 2)}">₹50.00</span>
+                </div>
+                <div class="bill-row total">
+                    <span>Total Amount Paid</span>
+                    <span style="color: var(--primary);" th:text="'₹' + ${#numbers.formatDecimal(reservation.totalAmount, 1, 2)}">₹549.00</span>
+                </div>
+                <div class="bill-row" style="margin-top: 0.5rem;">
+                    <span style="color: var(--text-muted);">Status</span>
+                    <span class="badge badge-confirmed" th:text="${reservation.status}">CONFIRMED</span>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: center; gap: 1rem;">
+                <a th:href="@{/bookings}" class="btn btn-primary">View My Bookings</a>
+                <a th:href="@{/vehicles}" class="btn btn-secondary">Book Another Vehicle</a>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- BOOKING FORM VIEW (Enter Details & Confirm) -->
+        <!-- ========================================== -->
+        <div th:if="${reservation == null and vehicle != null}">
+            <!-- Page Header -->
+            <div style="margin-bottom: 1.5rem;">
+                <a th:href="@{/vehicles}" style="font-size: 0.9rem; font-weight: 600;">&larr; Back to Vehicles</a>
+                <h1 style="font-size: 1.7rem; font-weight: 800; color: var(--text-main); margin-top: 0.5rem;">
+                    Reserve Vehicle
+                </h1>
+                <p style="color: var(--text-muted); font-size: 0.95rem;">
+                    Complete your booking details and review calculated charges.
+                </p>
+            </div>
+
+            <!-- Error Alert -->
+            <div th:if="${errorMessage}" class="alert alert-error">
+                <span th:text="${errorMessage}">Validation Error</span>
+            </div>
+
+            <!-- Selected Vehicle Summary Card -->
+            <div class="card" style="border-left: 4px solid var(--primary); margin-bottom: 1.5rem;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <span class="form-help" th:text="${vehicle.id}">R101</span>
+                        <h3 style="font-size: 1.3rem; font-weight: 700;" th:text="${vehicle.name}">Vehicle A</h3>
+                        <span class="badge badge-info" th:text="${vehicle.category}">Sedan</span>
+                    </div>
+                    <div style="text-align: right;">
+                        <span class="form-help">Daily Rate</span>
+                        <div style="font-size: 1.4rem; font-weight: 800; color: var(--primary);" 
+                             id="vehicleRate" 
+                             th:data-rate="${vehicle.rate}"
+                             th:text="${vehicle.rate}">
+                            499
+                        </div>
+                        <span class="form-help" th:text="'Available: ' + ${vehicle.availability} + ' unit(s)'">Available: 10</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Booking Form -->
+            <div class="card">
+                <form id="bookingForm" th:action="@{/booking/confirm}" method="post">
+                    <input type="hidden" name="resourceId" th:value="${vehicle.id}">
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <!-- Quantity Input (BR1: 1 to 5) -->
+                        <div class="form-group">
+                            <label class="form-label" for="bookingQuantity">Quantity (1 - 5 units) *</label>
+                            <input type="number" id="bookingQuantity" name="quantity" class="form-control" 
+                                   min="1" max="5" step="1"
+                                   th:value="${enteredQuantity != null ? enteredQuantity : 1}" required>
+                            <span id="quantityError" class="form-help" style="color: var(--danger); display: none;">
+                                Quantity must be between 1 and 5.
+                            </span>
+                            <span class="form-help">Max 5 units per booking (BR1)</span>
+                        </div>
+
+                        <!-- Booking Date (BR5) -->
+                        <div class="form-group">
+                            <label class="form-label" for="bookingDate">Journey / Booking Date *</label>
+                            <input type="date" id="bookingDate" name="bookingDate" class="form-control" 
+                                   th:min="${minDate}"
+                                   th:value="${enteredBookingDate != null and enteredBookingDate != '' ? enteredBookingDate : defaultDate}" required>
+                            <span class="form-help">Date cannot be in the past</span>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <!-- Customer Name (BR5) -->
+                        <div class="form-group">
+                            <label class="form-label" for="customerName">Customer Full Name *</label>
+                            <input type="text" id="customerName" name="customerName" class="form-control" 
+                                   th:value="${enteredCustomerName != null ? enteredCustomerName : user.name}" placeholder="e.g. John Doe" required>
+                            <span class="form-help">Full name as per official ID</span>
+                        </div>
+
+                        <!-- Customer Phone (BR5: exactly 10 digits) -->
+                        <div class="form-group">
+                            <label class="form-label" for="customerPhone">Phone Number (10 Digits) *</label>
+                            <input type="tel" id="customerPhone" name="customerPhone" class="form-control" 
+                                   th:value="${enteredCustomerPhone}" placeholder="e.g. 9876543210" pattern="[0-9]{10}" maxlength="10" required>
+                            <span class="form-help">Must contain exactly 10 digits</span>
+                        </div>
+                    </div>
+
+                    <!-- Identity Proof (BR5) -->
+                    <div class="form-group">
+                        <label class="form-label" for="identityProof">Identity Proof / Driving License Reference *</label>
+                        <input type="text" id="identityProof" name="identityProof" class="form-control" 
+                               th:value="${enteredIdentityProof}" placeholder="e.g. DL-987654321 or AADHAAR-1234" required>
+                        <span class="form-help">Required for vehicle checkout validation</span>
+                    </div>
+
+                    <!-- Dynamic Fare Calculation Box (BR4) -->
+                    <div class="bill-box">
+                        <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.03em;">
+                            Fare Calculation
+                        </h4>
+                        <div class="bill-row">
+                            <span>Base Total (Rate &times; Quantity):</span>
+                            <span id="calcBaseTotal" style="font-weight: 600;">₹0.00</span>
+                        </div>
+                        <div class="bill-row">
+                            <span>
+                                Booking Charge:
+                                <small style="color: var(--text-muted); display: block; font-size: 0.75rem;">(Free ₹0 if Base Total &ge; ₹1000, else ₹50)</small>
+                            </span>
+                            <span id="calcBookingCharge" style="font-weight: 600;">₹0.00</span>
+                        </div>
+                        <div class="bill-row total">
+                            <span>Grand Total Amount:</span>
+                            <span id="calcGrandTotal" style="color: var(--primary);">₹0.00</span>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem;">
+                        <a th:href="@{/vehicles}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" id="submitBookingBtn" class="btn btn-primary">
+                            Confirm Reservation
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="footer">
+        &copy; Car Rental System &mdash; Software Engineering Student Project
+    </footer>
+
+    <script th:src="@{/js/script.js}"></script>
+</body>
+</html>

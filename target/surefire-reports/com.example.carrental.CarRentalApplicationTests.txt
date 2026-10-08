@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.example.carrental.CarRentalApplicationTests
+-------------------------------------------------------------------------------
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.729 s -- in com.example.carrental.CarRentalApplicationTests

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Car Rental System</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="brand-badge">CRS</span>
+            <span>Car Rental System</span>
+        </div>
+        <ul class="nav-links">
+            <li><a th:href="@{/dashboard}" class="nav-link active">Dashboard</a></li>
+            <li><a th:href="@{/vehicles}" class="nav-link">Vehicles</a></li>
+            <li><a th:href="@{/bookings}" class="nav-link">My Bookings</a></li>
+        </ul>
+        <div class="nav-user">
+            <span class="user-badge" th:text="${user.role}">USER</span>
+            <span style="font-weight: 600;" th:text="${user.username}">user1</span>
+            <a th:href="@{/logout}" class="btn btn-secondary btn-sm">Logout</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Welcome Header -->
+        <div style="margin-bottom: 2rem;">
+            <h1 style="font-size: 1.8rem; font-weight: 800; color: var(--text-main);">
+                Welcome back, <span th:text="${user.name}">User</span>!
+            </h1>
+            <p style="color: var(--text-muted); font-size: 1rem;">
+                Here is an overview of your car rental activity and vehicle availability.
+            </p>
+        </div>
+
+        <!-- Metric Stat Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-label">Available Vehicles</span>
+                <span class="stat-value" th:text="${availableVehiclesCount}">0</span>
+                <a th:href="@{/vehicles}" style="margin-top: 0.5rem; font-size: 0.85rem; font-weight: 600;">Browse fleet &rarr;</a>
+            </div>
+
+            <div class="stat-card">
+                <span class="stat-label">Total Bookings</span>
+                <span class="stat-value" th:text="${totalBookingsCount}">0</span>
+                <a th:href="@{/bookings}" style="margin-top: 0.5rem; font-size: 0.85rem; font-weight: 600;">View history &rarr;</a>
+            </div>
+
+            <div class="stat-card">
+                <span class="stat-label">Active Booking Status</span>
+                <div style="margin-top: 0.5rem;">
+                    <span th:if="${activeBooking != null}" 
+                          th:class="'badge badge-' + ${#strings.toLowerCase(activeBooking.status)}"
+                          th:text="${activeBooking.status}">CONFIRMED</span>
+                    <span th:if="${activeBooking == null}" class="badge badge-unavailable">No Active Trip</span>
+                </div>
+                <span style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;" 
+                      th:if="${activeBooking != null}" th:text="'Ref: ' + ${activeBooking.reference}">Ref: BK-1001</span>
+            </div>
+        </div>
+
+        <!-- Active Booking Highlight Card (if exists) -->
+        <div th:if="${activeBooking != null}" class="card" style="border-left: 4px solid var(--primary);">
+            <div class="card-title">Current Active Reservation</div>
+            <p class="card-subtitle">Your upcoming journey details</p>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                <div>
+                    <span class="form-help">Booking Reference</span>
+                    <div style="font-weight: 700; font-size: 1.1rem;" th:text="${activeBooking.reference}">BK-1001</div>
+                </div>
+                <div>
+                    <span class="form-help">Journey Date</span>
+                    <div style="font-weight: 600;" th:text="${activeBooking.date}">2026-10-10</div>
+                </div>
+                <div>
+                    <span class="form-help">Total Amount</span>
+                    <div style="font-weight: 700; color: var(--primary);" th:text="'₹' + ${#numbers.formatDecimal(activeBooking.totalAmount, 1, 2)}">₹499.00</div>
+                </div>
+                <div>
+                    <span class="form-help">Status</span>
+                    <div>
+                        <span th:class="'badge badge-' + ${#strings.toLowerCase(activeBooking.status)}"
+                              th:text="${activeBooking.status}">CONFIRMED</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 1.25rem;">
+                <a th:href="@{/bookings}" class="btn btn-secondary btn-sm">Manage Reservation</a>
+            </div>
+        </div>
+
+        <!-- Quick Action Banner -->
+        <div class="card" style="background: linear-gradient(135deg, #2563eb, #1e40af); color: white; display: flex; justify-content: space-between; align-items: center; flex-wrap: gap; border: none;">
+            <div>
+                <h3 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 0.35rem;">Need a ride today?</h3>
+                <p style="opacity: 0.9; font-size: 0.95rem;">Choose from our sedans, SUVs, and hatchbacks with transparent zero hidden charges.</p>
+            </div>
+            <div>
+                <a th:href="@{/vehicles}" class="btn" style="background: white; color: var(--primary); font-weight: 700;">
+                    Book a Vehicle Now
+                </a>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="footer">
+        &copy; Car Rental System &mdash; Software Engineering Student Project
+    </footer>
+
+    <script th:src="@{/js/script.js}"></script>
+</body>
+</html>
